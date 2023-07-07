@@ -68,18 +68,21 @@ TEST(DeviceDriver, writeExpection) {
 	EXPECT_ANY_THROW(driver.write(TEST_ADDRESS, 0xAA));
 }
 
-TEST(Application, readAndPrint) {
+class ApplicationFixture : public testing::Test
+{
+public:
 	FlashMemoryDriverMock hwMock;
+	Application app{ &hwMock };
+	vector<int> result;
+};
+
+TEST_F(ApplicationFixture, readAndPrint) {
 
 	for (int i = 0; i < 10; ++i)
 	{
 		EXPECT_CALL(hwMock, read(i))
 			.WillRepeatedly(Return(i));
 	}
-
-	Application app{ &hwMock };
-
-	vector<int> result;
 
 	result = app.ReadAndPrint(0, 10);
 
@@ -90,8 +93,7 @@ TEST(Application, readAndPrint) {
 	}
 }
 
-TEST(Application, writeAll) {
-	FlashMemoryDriverMock hwMock;
+TEST_F(ApplicationFixture, writeAll) {
 
 	int value = 0xAA;
 	for (int i = 0; i < 5; ++i)
@@ -99,10 +101,6 @@ TEST(Application, writeAll) {
 		EXPECT_CALL(hwMock, read(i))
 			.WillRepeatedly(Return(value));
 	}
-
-	Application app{ &hwMock };
-
-	vector<int> result;
 
 	app.WriteAll(value);
 	result = app.ReadAndPrint(0, 5);
