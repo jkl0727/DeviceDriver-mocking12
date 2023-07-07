@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "../DeviceDriver/DeviceDriver.cpp"
+#include "../DeviceDriver/App.cpp"
 using namespace testing;
 
 #define TEST_ADDRESS 0x100
@@ -65,4 +66,54 @@ TEST(DeviceDriver, writeExpection) {
 	DeviceDriver driver{ &hwMock };
 
 	EXPECT_ANY_THROW(driver.write(TEST_ADDRESS, 0xAA));
+}
+
+class ApplicationFixture : public testing::Test
+{
+public:
+	FlashMemoryDriverMock hwMock;
+	Application app{ &hwMock };
+	vector<int> result;
+};
+
+TEST_F(ApplicationFixture, readAndPrint) {
+
+	for (int i = 0; i < 10; ++i)
+	{
+		EXPECT_CALL(hwMock, read(i))
+			.WillRepeatedly(Return(i));
+	}
+
+	result = app.ReadAndPrint(0, 10);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		cout << result[i] << endl;
+		EXPECT_EQ(result[i], i);
+	}
+}
+
+TEST_F(ApplicationFixture, writeAll) {
+
+	int value = 0xAA;
+	for (int i = 0; i < 5; ++i)
+	{
+		EXPECT_CALL(hwMock, read(i))
+			.WillRepeatedly(Return(0xFF));
+		EXPECT_CALL(hwMock, write(i, value));
+	}
+	app.WriteAll(value);
+
+	for (int i = 0; i < 5; ++i)
+	{
+		EXPECT_CALL(hwMock, read(i))
+			.WillRepeatedly(Return(value));
+	}
+	result = app.ReadAndPrint(0, 5);
+
+	for (int i = 0; i < 5; ++i)
+	{
+		cout << result[i] << endl;
+		EXPECT_EQ(result[i], value);
+	}
 }
