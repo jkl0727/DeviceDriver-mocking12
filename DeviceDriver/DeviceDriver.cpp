@@ -1,10 +1,20 @@
 #include <windows.h>
 #include <stdexcept>
+#include <exception>
+
 #include "DeviceDriver.h"
 using namespace std;
 
 DeviceDriver::DeviceDriver(FlashMemoryDevice* hardware) : m_hardware(hardware)
 {}
+
+class WriteFailException : public exception {
+public:
+	void writeFail()
+	{
+		throw exception("already written");
+	}
+};
 
 void DeviceDriver::read5times(long address, int readResult[5])
 {
@@ -37,6 +47,13 @@ int DeviceDriver::read(long address)
 
 void DeviceDriver::write(long address, int data)
 {
-    // TODO: implement this method
-    m_hardware->write(address, (unsigned char)data);
+    if (m_hardware->read(address) == 0xFF)
+    {
+		m_hardware->write(address, (unsigned char)data);
+    }
+	else
+	{
+		WriteFailException e;
+		e.writeFail();
+	}
 }
