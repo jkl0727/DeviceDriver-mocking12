@@ -89,3 +89,27 @@ TEST(Application, readAndPrint) {
 		EXPECT_EQ(result[i], i);
 	}
 }
+
+TEST(Application, writeAll) {
+	FlashMemoryDriverMock hwMock;
+
+	int value = 0xAA;
+	for (int i = 0; i < 5; ++i)
+	{
+		EXPECT_CALL(hwMock, read(i))
+			.WillRepeatedly(Return(value));
+	}
+
+	Application app{ &hwMock };
+
+	vector<int> result;
+
+	app.WriteAll(value);
+	result = app.ReadAndPrint(0, 5);
+
+	for (int i = 0; i < 5; ++i)
+	{
+		cout << result[i] << endl;
+		EXPECT_EQ(result[i], value);
+	}
+}
