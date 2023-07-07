@@ -14,9 +14,24 @@ TEST(DeviceDriver, read) {
 
 	FlashMemoryDriverMock hwMock;
 	EXPECT_CALL(hwMock, read(0x100))
+		.Times(5)
 		.WillRepeatedly(Return(0xAB));
 
 	DeviceDriver driver{ &hwMock };
 
 	EXPECT_EQ(driver.read(0x100), 0xAB);
+}
+
+TEST(DeviceDriver, readException) {
+
+	FlashMemoryDriverMock hwMock;
+	EXPECT_CALL(hwMock, read(0x100))
+		.Times(5)
+		.WillOnce(Return(0xAB))
+		.WillOnce(Return(0xAB))
+		.WillRepeatedly(Return(0xBB));
+
+	DeviceDriver driver{ &hwMock };
+
+	EXPECT_THROW(driver.read(0x100), logic_error);
 }
