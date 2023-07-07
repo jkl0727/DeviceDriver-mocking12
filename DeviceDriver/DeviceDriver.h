@@ -10,4 +10,6 @@ public:
 
 protected:
     FlashMemoryDevice* m_hardware;
+    void read5times(long address, int readResult[5]);
+    void checkReadValidation(int readResult[5]);
 };
