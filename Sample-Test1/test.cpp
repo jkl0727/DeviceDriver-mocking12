@@ -99,10 +99,16 @@ TEST_F(ApplicationFixture, writeAll) {
 	for (int i = 0; i < 5; ++i)
 	{
 		EXPECT_CALL(hwMock, read(i))
+			.WillRepeatedly(Return(0xFF));
+		EXPECT_CALL(hwMock, write(i, value));
+	}
+	app.WriteAll(value);
+
+	for (int i = 0; i < 5; ++i)
+	{
+		EXPECT_CALL(hwMock, read(i))
 			.WillRepeatedly(Return(value));
 	}
-
-	app.WriteAll(value);
 	result = app.ReadAndPrint(0, 5);
 
 	for (int i = 0; i < 5; ++i)

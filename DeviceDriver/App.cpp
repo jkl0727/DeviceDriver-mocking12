@@ -5,13 +5,16 @@ using namespace std;
 class Application
 {
 public:
-	Application(FlashMemoryDevice* hardware) : m_hardware(hardware){}
+	Application(FlashMemoryDevice* hardware) : m_hardware(hardware)
+	{
+		driver = new DeviceDriver{ m_hardware };
+	}
 	vector<int> ReadAndPrint(int startAddr, int endAddr)
 	{
 		vector<int> result;
 		for(int i = startAddr; i < endAddr; ++i)
 		{
-			result.push_back(m_hardware->read(i));
+			result.push_back(driver->read(i));
 		}
 		return result;
 	}
@@ -20,9 +23,10 @@ public:
 	{
 		for(int i = 0; i  < 5; ++i)
 		{
-			m_hardware->write(i, value);
+			driver->write(i, value);
 		}
 	}
 private:
 	FlashMemoryDevice* m_hardware;
+	DeviceDriver* driver;
 };
