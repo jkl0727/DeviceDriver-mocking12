@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "../DeviceDriver/DeviceDriver.cpp"
+#include "../DeviceDriver/App.cpp"
 using namespace testing;
 
 #define TEST_ADDRESS 0x100
@@ -65,4 +66,26 @@ TEST(DeviceDriver, writeExpection) {
 	DeviceDriver driver{ &hwMock };
 
 	EXPECT_ANY_THROW(driver.write(TEST_ADDRESS, 0xAA));
+}
+
+TEST(Application, readAndPrint) {
+	FlashMemoryDriverMock hwMock;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		EXPECT_CALL(hwMock, read(i))
+			.WillRepeatedly(Return(i));
+	}
+
+	Application app{ &hwMock };
+
+	vector<int> result;
+
+	result = app.ReadAndPrint(0, 10);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		cout << result[i] << endl;
+		EXPECT_EQ(result[i], i);
+	}
 }
