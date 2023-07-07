@@ -3,6 +3,8 @@
 #include "../DeviceDriver/DeviceDriver.cpp"
 using namespace testing;
 
+#define TEST_ADDRESS 0x100
+
 class FlashMemoryDriverMock : public FlashMemoryDevice
 {
 public:
@@ -13,19 +15,19 @@ public:
 TEST(DeviceDriver, read) {
 
 	FlashMemoryDriverMock hwMock;
-	EXPECT_CALL(hwMock, read(0x100))
+	EXPECT_CALL(hwMock, read(TEST_ADDRESS))
 		.Times(5)
 		.WillRepeatedly(Return(0xAB));
 
 	DeviceDriver driver{ &hwMock };
 
-	EXPECT_EQ(driver.read(0x100), 0xAB);
+	EXPECT_EQ(driver.read(TEST_ADDRESS), 0xAB);
 }
 
 TEST(DeviceDriver, readException) {
 
 	FlashMemoryDriverMock hwMock;
-	EXPECT_CALL(hwMock, read(0x100))
+	EXPECT_CALL(hwMock, read(TEST_ADDRESS))
 		.Times(5)
 		.WillOnce(Return(0xAB))
 		.WillOnce(Return(0xAB))
@@ -33,5 +35,34 @@ TEST(DeviceDriver, readException) {
 
 	DeviceDriver driver{ &hwMock };
 
-	EXPECT_THROW(driver.read(0x100), logic_error);
+	EXPECT_THROW(driver.read(TEST_ADDRESS), logic_error);
+}
+
+TEST(DeviceDriver, write) {
+
+	FlashMemoryDriverMock hwMock;
+	EXPECT_CALL(hwMock, read(TEST_ADDRESS))
+		.WillRepeatedly(Return(0xFF));
+	EXPECT_CALL(hwMock, write(TEST_ADDRESS, 0xAA));
+
+	DeviceDriver driver{ &hwMock };
+
+	driver.write(TEST_ADDRESS, 0xAA);
+
+	EXPECT_CALL(hwMock, read(TEST_ADDRESS))
+		.WillRepeatedly(Return(0xAA));
+	EXPECT_EQ(driver.read(TEST_ADDRESS), 0xAA);
+}
+
+TEST(DeviceDriver, writeExpection) {
+
+	FlashMemoryDriverMock hwMock;
+	EXPECT_CALL(hwMock, read(TEST_ADDRESS))
+		.WillRepeatedly(Return(0xAA));
+	EXPECT_CALL(hwMock, write(TEST_ADDRESS, 0xAA))
+		.Times(0);
+
+	DeviceDriver driver{ &hwMock };
+
+	EXPECT_ANY_THROW(driver.write(TEST_ADDRESS, 0xAA));
 }
